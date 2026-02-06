@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Generator</title>
+    <style>
+        :root {
+            --bg-color: #050511;
+            --card-bg: rgba(20, 20, 35, 0.6);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --accent: #ec4899;
+            --success: #10b981;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            padding: 1rem;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        body::before {
+            background: var(--primary);
+            top: -100px;
+            left: -100px;
+        }
+
+        body::after {
+            background: var(--accent);
+            bottom: -100px;
+            right: -100px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            padding: 0.9rem;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .row>* {
+            flex: 1;
+        }
+
+        button {
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px -5px var(--primary-glow);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 8px 20px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+
+        /* Script Editor Section */
+        #editor-section {
+            display: none;
+        }
+
+        #script-editor {
+            min-height: 300px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .status {
+            padding: 0.9rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .status.loading {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+
+        /* Settings Toggle */
+        .settings-toggle {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            margin-top: 1.5rem;
+        }
+
+        #settings-panel {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- STEP 1: Prompt Form -->
+        <div id="prompt-section" class="card">
+            <h1>✨ Script Generator</h1>
+            <p class="subtitle">Generate video scripts with AI, review & edit before saving.</p>
+
+            <form id="generateForm">
+                <div class="form-group">
+                    <label for="prompt">What's the script about?</label>
+                    <textarea id="prompt" rows="3"
+                        placeholder="e.g. A 60-second explainer about why morning routines matter..."
+                        required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="style">Style</label>
+                        <select id="style">
+                            <option value="cinematic">Cinematic</option>
+                            <option value="documentary">Documentary</option>
+                            <option value="educational">Educational</option>
+                            <option value="energetic">Energetic / Upbeat</option>
+                            <option value="calm">Calm / Relaxing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration (sec)</label>
+                        <input type="number" id="duration" value="60" min="15" max="300">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="generateBtn">Generate Script</button>
+                <div id="generateStatus" class="status"></div>
+
+                <div class="settings-toggle" onclick="toggleSettings()">⚙️ Webhook Settings</div>
+                <div id="settings-panel">
+                    <div class="form-group">
+                        <label>Generate Webhook URL</label>
+                        <input type="text" id="generateWebhook"
+                            value="https://n8n.srv1146840.hstgr.cloud/webhook/generate-script">
+                    </div>
+                    <div class="form-group">
+                        <label>Save Webhook URL</label>
+                        <input type="text" id="saveWebhook"
+                            value="https://n8n.srv1146840.hstgr.cloud/webhook/save-script">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- STEP 2: Script Editor -->
+        <div id="editor-section" class="card">
+            <h1>📝 Review & Edit</h1>
+            <p class="subtitle">Edit the script below, then save or regenerate.</p>
+
+            <div class="form-group">
+                <label for="script-editor">Your Script</label>
+                <textarea id="script-editor"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="feedback">Regenerate with feedback (optional)</label>
+                <input type="text" id="feedback" placeholder="e.g. Make it shorter, add more energy...">
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-outline" id="regenerateBtn">🔄 Regenerate</button>
+                <button type="button" class="btn-success" id="saveBtn">💾 Save to Drive</button>
+            </div>
+
+            <div id="editorStatus" class="status"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // Elements
+        const generateForm = document.getElementById('generateForm');
+        const promptSection = document.getElementById('prompt-section');
+        const editorSection = document.getElementById('editor-section');
+        const scriptEditor = document.getElementById('script-editor');
+        const generateBtn = document.getElementById('generateBtn');
+        const regenerateBtn = document.getElementById('regenerateBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const generateStatus = document.getElementById('generateStatus');
+        const editorStatus = document.getElementById('editorStatus');
+        const feedbackInput = document.getElementById('feedback');
+
+        // State
+        let currentPrompt = '';
+        let currentStyle = '';
+        let currentDuration = 60;
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = 'status ' + type;
+            element.style.display = 'block';
+        }
+
+        function hideStatus(element) {
+            element.style.display = 'none';
+        }
+
+        // Generate Script
+        generateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            currentPrompt = document.getElementById('prompt').value;
+            currentStyle = document.getElementById('style').value;
+            currentDuration = parseInt(document.getElementById('duration').value);
+            await generateScript();
+        });
+
+        async function generateScript(feedback = '') {
+            const webhookUrl = document.getElementById('generateWebhook').value.trim();
+
+            generateBtn.disabled = true;
+            regenerateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            showStatus(generateStatus, '⏳ Generating your script...', 'loading');
+            hideStatus(editorStatus);
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: currentPrompt,
+                        style: currentStyle,
+                        duration: currentDuration,
+                        feedback: feedback
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.script) {
+                    scriptEditor.value = data.script;
+                    editorSection.style.display = 'block';
+                    showStatus(generateStatus, '✅ Script generated! Review below.', 'success');
+                    editorSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error(error);
+                showStatus(generateStatus, '❌ Error: ' + error.message, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                regenerateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Script';
+            }
+        }
+
+        // Regenerate with feedback
+        regenerateBtn.addEventListener('click', async () => {
+            const feedback = feedbackInput.value.trim();
+            await generateScript(feedback);
+            feedbackInput.value = '';
+        });
+
+        // Save to Google Drive
+        saveBtn.addEventListener('click', async () => {
+            const webhookUrl = document.getElementById('saveWebhook').value.trim();
+            const script = scriptEditor.value.trim();
+
+            if (!script) {
+                showStatus(editorStatus, '❌ Script is empty!', 'error');
+                return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            showStatus(editorStatus, '⏳ Saving to Google Drive...', 'loading');
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ script: script })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus(editorStatus, '✅ Saved! File: ' + (data.fileName || 'Script.txt'), 'success');
+                } else {
+                    throw new Error(data.error || 'Save failed');
+                }
+            } catch (error) {
+                console.error(error);
+                showStatus(editorStatus, '❌ Error: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save to Drive';
+            }
+        });
+    </script>
+</body>
+
+</html>
