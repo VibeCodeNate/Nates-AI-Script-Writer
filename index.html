@@ -408,7 +408,10 @@
                     })
                 });
 
-                const data = await response.json();
+                const rawData = await response.json();
+
+                // Handle both array format (from n8n allIncomingItems) and object format
+                const data = Array.isArray(rawData) ? rawData[0] : rawData;
 
                 if (data.success && data.script) {
                     scriptEditor.value = data.script;
@@ -453,10 +456,16 @@
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ script: script })
+                    body: JSON.stringify({
+                        script: script,
+                        topic: currentPrompt
+                    })
                 });
 
-                const data = await response.json();
+                const rawData = await response.json();
+
+                // Handle both array format (from n8n allIncomingItems) and object format
+                const data = Array.isArray(rawData) ? rawData[0] : rawData;
 
                 if (data.success) {
                     showStatus(editorStatus, '✅ Saved! File: ' + (data.fileName || 'Script.txt'), 'success');
